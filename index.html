@@ -1,0 +1,3272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Controle de Produtividade V2.2</title>
+
+<style>
+
+:root{
+
+--azul:#1565C0;
+--verde:#2E7D32;
+--laranja:#EF6C00;
+--vermelho:#C62828;
+--amarelo:#F9A825;
+--cinza:#ECEFF1;
+--borda:#CFD8DC;
+--texto:#263238;
+
+}
+
+*{
+
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,Helvetica,sans-serif;
+
+}
+
+body{
+
+background:var(--cinza);
+
+padding:15px;
+
+color:var(--texto);
+
+}
+
+h1{
+
+text-align:center;
+
+color:var(--azul);
+
+margin-bottom:15px;
+
+}
+
+.card{
+
+background:white;
+
+border-radius:10px;
+
+padding:15px;
+
+margin-bottom:15px;
+
+box-shadow:0 4px 12px rgba(0,0,0,.15);
+
+}
+
+#topo{
+
+display:flex;
+
+gap:15px;
+
+align-items:center;
+
+margin-bottom:15px;
+
+}
+
+button{
+
+border:none;
+
+border-radius:8px;
+
+padding:10px;
+
+cursor:pointer;
+
+font-size:15px;
+
+transition:.2s;
+
+}
+
+button:hover{
+
+transform:scale(1.02);
+
+}
+
+button:disabled{
+
+opacity:.5;
+
+cursor:not-allowed;
+
+transform:none;
+
+}
+
+input,select{
+
+width:100%;
+
+padding:10px;
+
+border:1px solid var(--borda);
+
+border-radius:8px;
+
+font-size:15px;
+
+}
+
+#btAtualizar{
+
+width:180px;
+
+background:var(--azul);
+
+color:white;
+
+}
+
+#painel{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:15px;
+
+}
+
+@media(max-width:900px){
+
+#painel{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+.status{
+
+padding:15px;
+
+border-radius:8px;
+
+text-align:center;
+
+font-size:22px;
+
+font-weight:bold;
+
+margin-bottom:15px;
+
+}
+
+.verde{
+
+background:#C8E6C9;
+
+color:#1B5E20;
+
+}
+
+.vermelho{
+
+background:#FFCDD2;
+
+color:#B71C1C;
+
+}
+
+.amarelo{
+
+background:#FFF59D;
+
+color:#E65100;
+
+animation:piscar .8s infinite;
+
+}
+
+@keyframes piscar{
+
+50%{
+
+opacity:.4;
+
+}
+
+}
+
+#cronometro{
+
+font-size:42px;
+
+font-weight:bold;
+
+text-align:center;
+
+margin-top:15px;
+
+color:#D84315;
+
+}
+
+#horarioPrevisto{
+
+font-size:22px;
+
+font-weight:bold;
+
+text-align:center;
+
+margin-top:15px;
+
+color:#1565C0;
+
+}
+
+#mensagemPreparacao{
+
+text-align:center;
+
+font-size:18px;
+
+margin-top:12px;
+
+font-weight:bold;
+
+color:#C62828;
+
+}
+
+progress{
+
+width:100%;
+
+height:18px;
+
+margin-top:12px;
+
+}
+
+.linha{
+
+display:flex;
+
+gap:10px;
+
+margin-top:10px;
+
+}
+
+table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-top:10px;
+
+}
+
+th{
+
+background:#1565C0;
+
+color:white;
+
+padding:8px;
+
+}
+
+td{
+
+border:1px solid #CFD8DC;
+
+padding:8px;
+
+text-align:center;
+
+}
+
+.mes{
+
+margin-top:12px;
+
+border-radius:8px;
+
+overflow:hidden;
+
+box-shadow:0 3px 8px rgba(0,0,0,.12);
+
+}
+
+.mesTitulo{
+
+background:#1565C0;
+
+color:white;
+
+padding:12px;
+
+cursor:pointer;
+
+font-weight:bold;
+
+}
+
+.mesConteudo{
+
+display:none;
+
+padding:15px;
+
+background:white;
+
+}
+
+#modalSenha{
+
+display:none;
+
+position:fixed;
+
+left:0;
+
+top:0;
+
+width:100%;
+
+height:100%;
+
+background:rgba(0,0,0,.45);
+
+justify-content:center;
+
+align-items:center;
+
+z-index:999;
+
+}
+
+#janelaSenha{
+
+background:white;
+
+width:320px;
+
+padding:20px;
+
+border-radius:10px;
+
+}
+
+#janelaSenha button{
+
+width:100%;
+
+margin-top:10px;
+
+}
+
+.estrelas{
+
+font-size:28px;
+
+color:#FBC02D;
+
+font-weight:bold;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>
+
+CONTROLE DE PRODUTIVIDADE
+
+</h1>
+
+<div id="topo">
+
+<button id="btAtualizar">
+
+Atualizar
+
+</button>
+
+<div>
+
+<div id="statusBanco">
+
+Desconectado
+
+</div>
+
+<div id="ultimaAtualizacao">
+
+Nunca atualizado
+
+</div>
+
+</div>
+
+</div>
+
+<div id="painel">
+
+<div class="card">
+
+<h2>
+
+Área da Contratada
+
+</h2>
+
+<div
+
+id="statusContratada"
+
+class="status vermelho">
+
+FORA DE DISPONIBILIDADE
+
+</div>
+
+<button
+
+id="btDisponivelSimples"
+
+style="background:#2E7D32;color:white;width:100%;margin-top:8px;">
+
+Disponibilidade Simples
+
+</button>
+
+<button
+
+id="btDisponivelCompleta"
+
+style="background:#1565C0;color:white;width:100%;margin-top:8px;">
+
+Disponibilidade Completa
+
+</button>
+
+<button
+
+id="btSairDisponibilidade"
+
+style="background:#C62828;color:white;width:100%;margin-top:8px;">
+
+Sair da Disponibilidade
+
+</button>
+
+<div id="cronometro">
+
+--:--
+
+</div>
+
+<div id="horarioPrevisto">
+
+</div>
+
+<progress
+
+id="barraPreparacao"
+
+max="100"
+
+value="0">
+
+</progress>
+
+<div id="mensagemPreparacao">
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+Área do Contratante
+
+</h2>
+
+<div
+
+id="statusContratante"
+
+class="status vermelho">
+
+SEM DISPONIBILIDADE
+
+</div>
+
+<div class="linha">
+
+<input
+
+id="tempoPreparacao"
+
+type="number"
+
+step="0.5"
+
+min="0.5"
+
+placeholder="Minutos (vazio = 7,5)">
+
+<button
+
+id="btPreparacao"
+
+style="background:#EF6C00;color:white;width:180px;">
+
+Preparar
+
+</button>
+
+</div>
+
+<button
+
+id="btIniciar"
+
+style="background:#2E7D32;color:white;width:100%;margin-top:10px;">
+
+Iniciar Atividade
+
+</button>
+
+<button
+
+id="btFinalizar"
+
+style="background:#C62828;color:white;width:100%;margin-top:10px;">
+
+Finalizar Atividade
+
+</button>
+
+<hr style="margin:20px 0;">
+
+<h3>
+
+Cadastrar Atividade Não Computada
+
+</h3>
+
+<select id="manualTipo">
+
+<option value="Simples">
+
+Simples
+
+</option>
+
+<option value="Completa">
+
+Completa
+
+</option>
+
+</select>
+
+<input
+
+id="manualTempo"
+
+type="number"
+
+placeholder="Tempo em minutos"
+
+style="margin-top:10px;">
+
+<input
+
+id="manualData"
+
+type="date"
+
+style="margin-top:10px;">
+
+<input
+
+id="manualHora"
+
+type="time"
+
+style="margin-top:10px;">
+
+<button
+
+id="btSalvarManual"
+
+style="background:#1565C0;color:white;width:100%;margin-top:10px;">
+
+Salvar Registro
+
+</button>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+Histórico de Atividades
+
+</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Data</th>
+
+<th>Tipo</th>
+
+<th>Duração</th>
+
+<th>Origem</th>
+
+<th>Ação</th>
+
+</tr>
+
+</thead>
+
+<tbody id="listaHistorico">
+
+<tr>
+
+<td colspan="5">
+
+Nenhum registro.
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+Relatórios Mensais
+
+</h2>
+
+<div id="relatorios">
+
+Nenhum relatório disponível.
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+Avaliação do Mês Selecionado
+
+</h2>
+
+<table>
+
+<tr>
+
+<td>
+
+Horas Trabalhadas
+
+</td>
+
+<td
+
+class="estrelas"
+
+id="notaHoras">
+
+☆☆☆☆☆
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+Percentual de Atividades Completas
+
+</td>
+
+<td
+
+class="estrelas"
+
+id="notaCompletas">
+
+☆☆☆☆☆
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+Horas do Mês
+
+</td>
+
+<td id="horasMes">
+
+0,00
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+% Completa
+
+</td>
+
+<td id="percentualMes">
+
+0%
+
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<div id="modalSenha">
+
+<div id="janelaSenha">
+
+<h3>
+
+Senha do Contratante
+
+</h3>
+
+<input
+
+id="senha"
+
+type="password"
+
+placeholder="Digite a senha">
+
+<button
+
+id="btSenhaOK"
+
+style="background:#2E7D32;color:white;">
+
+Confirmar
+
+</button>
+
+<button
+
+id="btSenhaCancelar"
+
+style="background:#C62828;color:white;">
+
+Cancelar
+
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+/*************************************************
+
+CONFIGURAÇÃO
+
+*************************************************/
+
+const BIN_ID="6a475bf5da38895dfe26cd6a";
+
+const MASTER_KEY="$2a$10$7dVyC01WDjHJMWMUJIlfL.nhEeLVzYj29Efwck45r8on6hGiq20L6";
+
+const URL="https://api.jsonbin.io/v3/b/"+BIN_ID;
+
+/*************************************************
+
+ESTRUTURA PADRÃO DO BANCO
+
+*************************************************/
+
+const BANCO_PADRAO={
+
+status:{
+
+estado:"OFF",
+
+tipo:"",
+
+inicioDisponibilidade:null,
+
+inicioPreparacao:null,
+
+fimPreparacao:null,
+
+inicioAtividade:null,
+
+fimAtividade:null,
+
+atividadeAtual:null
+
+},
+
+config:{
+
+senha:"2123",
+
+tempoPadrao:7.5
+
+},
+
+historico:[]
+
+};
+
+let banco={};
+
+let callbackSenha=null;
+
+let mesSelecionado="";
+
+/*************************************************
+
+ATALHOS
+
+*************************************************/
+
+const $=id=>document.getElementById(id);
+
+function copiarBancoPadrao(){
+
+return JSON.parse(
+
+JSON.stringify(BANCO_PADRAO)
+
+);
+
+}
+
+
+/*************************************************
+
+JANELA DE SENHA
+
+*************************************************/
+
+function abrirSenha(callback){
+
+callbackSenha=callback;
+
+$("senha").value="";
+
+$("modalSenha").style.display="flex";
+
+$("senha").focus();
+
+}
+
+
+
+function fecharSenha(){
+
+$("modalSenha").style.display="none";
+
+callbackSenha=null;
+
+}
+
+
+
+$("btSenhaCancelar").onclick=
+
+fecharSenha;
+
+
+
+$("btSenhaOK").onclick=function(){
+
+if(
+
+$("senha").value!=banco.config.senha
+
+){
+
+alert("Senha incorreta.");
+
+$("senha").focus();
+
+return;
+
+}
+
+$("modalSenha").style.display="none";
+
+if(callbackSenha){
+
+callbackSenha();
+
+}
+
+};
+
+
+
+/*************************************************
+
+UTILITÁRIOS
+
+*************************************************/
+
+function atualizarHorario(){
+
+$("ultimaAtualizacao").innerHTML=
+
+new Date().toLocaleString("pt-BR");
+
+}
+
+
+
+function novoID(){
+
+return Date.now().toString()+
+
+Math.floor(Math.random()*100000);
+
+}
+
+
+
+function horaFormatada(data){
+
+let d=new Date(data);
+
+return String(d.getHours())
+
+.padStart(2,"0")
+
++":"
+
++
+
+String(d.getMinutes())
+
+.padStart(2,"0");
+
+}
+
+
+
+function copiarEstrutura(){
+
+if(!banco.status)
+
+banco.status=
+
+copiarBancoPadrao().status;
+
+if(!banco.config)
+
+banco.config=
+
+copiarBancoPadrao().config;
+
+if(!banco.historico)
+
+banco.historico=[];
+
+}
+
+
+
+/*************************************************
+
+JSONBIN
+
+*************************************************/
+
+async function requisicao(
+
+url,
+
+opcoes
+
+){
+
+const resposta=
+
+await fetch(
+
+url,
+
+opcoes
+
+);
+
+const texto=
+
+await resposta.text();
+
+if(!resposta.ok){
+
+throw new Error(texto);
+
+}
+
+return JSON.parse(texto);
+
+}
+
+
+
+async function carregarBanco(){
+
+$("statusBanco").innerHTML=
+
+"Conectando...";
+
+try{
+
+const json=
+
+await requisicao(
+
+URL+"/latest",
+
+{
+
+method:"GET",
+
+headers:{
+
+"X-Master-Key":
+
+MASTER_KEY
+
+}
+
+}
+
+);
+
+if(json.record){
+
+banco=json.record;
+
+}else{
+
+banco=
+
+copiarBancoPadrao();
+
+}
+
+copiarEstrutura();
+
+$("statusBanco").innerHTML=
+
+"🟢 Conectado";
+
+atualizarHorario();
+
+atualizarTela();
+
+gerarHistorico();
+
+gerarRelatorios();
+
+}catch(e){
+
+console.error(e);
+
+$("statusBanco").innerHTML=
+
+"🔴 Erro";
+
+}
+
+}
+
+
+
+async function salvarBanco(){
+
+copiarEstrutura();
+
+$("statusBanco").innerHTML=
+
+"Salvando...";
+
+try{
+
+await requisicao(
+
+URL,
+
+{
+
+method:"PUT",
+
+headers:{
+
+"Content-Type":
+
+"application/json",
+
+"X-Master-Key":
+
+MASTER_KEY
+
+},
+
+body:
+
+JSON.stringify(banco)
+
+}
+
+);
+
+$("statusBanco").innerHTML=
+
+"🟢 Conectado";
+
+atualizarHorario();
+
+}catch(e){
+
+console.error(e);
+
+$("statusBanco").innerHTML=
+
+"🔴 Erro";
+
+}
+
+}
+
+
+
+/*************************************************
+
+REGISTROS
+
+*************************************************/
+
+function adicionarRegistro(
+
+registro
+
+){
+
+banco.historico.push(registro);
+
+}
+
+
+
+function excluirRegistroLista(
+
+id
+
+){
+
+banco.historico=
+
+banco.historico.filter(
+
+r=>r.id!=id
+
+);
+
+}
+
+
+
+function mesesAgrupados(){
+
+let meses={};
+
+banco.historico.forEach(
+
+function(r){
+
+let data=r.data;
+
+if(!data)return;
+
+let chave=
+
+data.substring(0,7);
+
+if(!meses[chave]){
+
+meses[chave]=[];
+
+}
+
+meses[chave].push(r);
+
+}
+
+);
+
+return meses;
+
+}
+  
+/*************************************************
+
+INTERFACE
+
+*************************************************/
+
+function atualizarTela(){
+
+atualizarStatus();
+
+atualizarBotoes();
+
+atualizarPreparacao();
+
+}
+
+
+
+function atualizarStatus(){
+
+let s=banco.status;
+
+switch(s.estado){
+
+case "OFF":
+
+$("statusContratada").className=
+
+"status vermelho";
+
+$("statusContratada").innerHTML=
+
+"FORA DE DISPONIBILIDADE";
+
+$("statusContratante").className=
+
+"status vermelho";
+
+$("statusContratante").innerHTML=
+
+"SEM DISPONIBILIDADE";
+
+break;
+
+
+
+case "DISPONIVEL":
+
+$("statusContratada").className=
+
+"status verde";
+
+$("statusContratada").innerHTML=
+
+"DISPONÍVEL<br><br>"+
+
+s.tipo;
+
+$("statusContratante").className=
+
+"status verde";
+
+$("statusContratante").innerHTML=
+
+$("statusContratada").innerHTML;
+
+break;
+
+
+
+case "PREPARACAO":
+
+$("statusContratada").className=
+
+"status amarelo";
+
+$("statusContratada").innerHTML=
+
+"PREPARAÇÃO<br><br>"+
+
+s.tipo;
+
+$("statusContratante").className=
+
+"status amarelo";
+
+$("statusContratante").innerHTML=
+
+$("statusContratada").innerHTML;
+
+break;
+
+
+
+case "AGUARDANDO":
+
+$("statusContratada").className=
+
+"status amarelo";
+
+$("statusContratada").innerHTML=
+
+"CONTRATANTE CHEGA<br>A QUALQUER MOMENTO";
+
+$("statusContratante").className=
+
+"status amarelo";
+
+$("statusContratante").innerHTML=
+
+$("statusContratada").innerHTML;
+
+break;
+
+
+
+case "ATIVIDADE":
+
+$("statusContratada").className=
+
+"status vermelho";
+
+$("statusContratada").innerHTML=
+
+"EM ATIVIDADE<br><br>"+
+
+s.tipo;
+
+$("statusContratante").className=
+
+"status vermelho";
+
+$("statusContratante").innerHTML=
+
+$("statusContratada").innerHTML;
+
+break;
+
+}
+
+}
+
+
+
+function atualizarBotoes(){
+
+let e=banco.status.estado;
+
+$("btDisponivelSimples").disabled=
+
+e!="OFF";
+
+$("btDisponivelCompleta").disabled=
+
+e!="OFF";
+
+$("btSairDisponibilidade").disabled=
+
+e=="OFF";
+
+$("btPreparacao").disabled=
+
+e!="DISPONIVEL";
+
+$("tempoPreparacao").disabled=
+
+e!="DISPONIVEL";
+
+$("btIniciar").disabled =
+!(e=="DISPONIVEL" || e=="PREPARACAO");
+
+$("btFinalizar").disabled=
+
+e!="ATIVIDADE";
+
+}
+
+
+
+/*************************************************
+
+CRONÔMETRO DA PREPARAÇÃO
+
+*************************************************/
+
+function atualizarPreparacao(){
+
+if(
+
+banco.status.estado!="PREPARACAO"
+
+&&
+
+banco.status.estado!="AGUARDANDO"
+
+){
+
+$("cronometro").innerHTML="--:--";
+
+$("horarioPrevisto").innerHTML="";
+
+$("mensagemPreparacao").innerHTML="";
+
+$("barraPreparacao").value=0;
+
+return;
+
+}
+
+
+
+let fim=
+
+new Date(
+
+banco.status.fimPreparacao
+
+);
+
+let inicio=
+
+new Date(
+
+banco.status.inicioPreparacao
+
+);
+
+let agora=
+
+new Date();
+
+
+
+let restante=
+
+Math.floor(
+
+(fim-agora)/1000
+
+);
+
+
+
+$("horarioPrevisto").innerHTML=
+
+"Horário previsto: <b>"+
+
+horaFormatada(fim)+
+
+"</b>";
+
+
+
+let total=
+
+Math.floor(
+
+(fim-inicio)/1000
+
+);
+
+
+
+if(restante<=0){
+
+banco.status.estado=
+
+"AGUARDANDO";
+
+$("cronometro").innerHTML=
+
+"00:00";
+
+$("barraPreparacao").value=
+
+100;
+
+$("mensagemPreparacao").innerHTML=
+
+"Contratante chega a qualquer momento";
+
+return;
+
+}
+
+
+
+let minutos=
+
+Math.floor(
+
+restante/60
+
+);
+
+let segundos=
+
+restante%60;
+
+
+
+$("cronometro").innerHTML=
+
+String(minutos)
+
+.padStart(2,"0")
+
++
+
+":"
+
++
+
+String(segundos)
+
+.padStart(2,"0");
+
+
+
+let perc=
+
+100-
+
+(
+
+restante*100/total
+
+);
+
+if(perc<0)
+
+perc=0;
+
+if(perc>100)
+
+perc=100;
+
+
+
+$("barraPreparacao").value=
+
+perc;
+
+}
+
+
+
+/*************************************************
+
+CRONÔMETRO DA ATIVIDADE
+
+*************************************************/
+
+function atualizarTempoAtividade(){
+
+if(
+
+banco.status.estado!="ATIVIDADE"
+
+){
+
+return;
+
+}
+
+
+
+$("cronometro").style.display=
+
+"block";
+
+$("horarioPrevisto").style.display=
+
+"none";
+
+$("barraPreparacao").style.display=
+
+"none";
+
+$("mensagemPreparacao").style.display=
+
+"none";
+
+
+
+let inicio=
+
+new Date(
+
+banco.status.inicioAtividade
+
+);
+
+
+
+let segundos=
+
+Math.floor(
+
+(new Date()-inicio)
+
+/1000
+
+);
+
+
+
+let h=
+
+Math.floor(
+
+segundos/3600
+
+);
+
+let m=
+
+Math.floor(
+
+(segundos%3600)/60
+
+);
+
+let s=
+
+segundos%60;
+
+
+
+$("cronometro").innerHTML=
+
+String(h).padStart(2,"0")
+
++
+
+":"
+
++
+
+String(m).padStart(2,"0")
+
++
+
+":"
+
++
+
+String(s).padStart(2,"0");
+
+}
+
+
+
+setInterval(
+
+atualizarPreparacao,
+
+1000
+
+);
+
+setInterval(
+
+atualizarTempoAtividade,
+
+1000
+
+);
+  
+/*************************************************
+
+DISPONIBILIDADE
+
+*************************************************/
+
+async function entrarDisponibilidade(tipo){
+
+await carregarBanco();
+
+if(banco.status.estado!="OFF"){
+
+alert("A contratada já está em outro estado.");
+
+return;
+
+}
+
+banco.status.estado="DISPONIVEL";
+
+banco.status.tipo=tipo;
+
+banco.status.inicioDisponibilidade=
+
+new Date().toISOString();
+
+banco.status.inicioPreparacao=null;
+
+banco.status.fimPreparacao=null;
+
+banco.status.inicioAtividade=null;
+
+banco.status.fimAtividade=null;
+
+banco.status.atividadeAtual=null;
+
+await salvarBanco();
+
+atualizarTela();
+
+}
+
+
+
+async function sairDisponibilidade(){
+
+await carregarBanco();
+
+if(banco.status.estado!="DISPONIVEL"){
+
+alert("Só é possível sair quando estiver apenas em disponibilidade.");
+
+return;
+
+}
+
+banco.status.estado="OFF";
+
+banco.status.tipo="";
+
+banco.status.inicioDisponibilidade=null;
+
+await salvarBanco();
+
+atualizarTela();
+
+}
+
+
+
+$("btDisponivelSimples").onclick=function(){
+
+entrarDisponibilidade("Simples");
+
+};
+
+
+
+$("btDisponivelCompleta").onclick=function(){
+
+entrarDisponibilidade("Completa");
+
+};
+
+
+
+$("btSairDisponibilidade").onclick=
+
+sairDisponibilidade;
+
+
+
+/*************************************************
+
+PREPARAÇÃO
+
+*************************************************/
+
+async function prepararAtividade(){
+
+abrirSenha(async function(){
+
+await carregarBanco();
+
+if(banco.status.estado!="DISPONIVEL"){
+
+alert("A contratada precisa estar em disponibilidade.");
+
+return;
+
+}
+
+
+
+let minutos=
+
+parseFloat(
+
+$("tempoPreparacao").value
+
+);
+
+
+
+if(
+
+isNaN(minutos)
+
+||
+
+minutos<=0
+
+){
+
+minutos=
+
+banco.config.tempoPadrao;
+
+}
+
+
+
+let inicio=
+
+new Date();
+
+let fim=
+
+new Date(
+
+inicio.getTime()
+
++
+
+(minutos*60000)
+
+);
+
+
+
+banco.status.estado=
+
+"PREPARACAO";
+
+
+
+banco.status.inicioPreparacao=
+
+inicio.toISOString();
+
+
+
+banco.status.fimPreparacao=
+
+fim.toISOString();
+
+
+
+await salvarBanco();
+
+atualizarTela();
+
+});
+
+}
+
+
+
+$("btPreparacao").onclick=
+
+prepararAtividade;
+
+
+
+/*************************************************
+
+INICIAR ATIVIDADE
+
+*************************************************/
+
+async function iniciarAtividade(){
+
+abrirSenha(async function(){
+
+await carregarBanco();
+
+
+
+if(
+banco.status.estado!="DISPONIVEL" &&
+banco.status.estado!="PREPARACAO"
+){
+    alert("A contratada não está disponível.");
+    return;
+}
+
+
+
+let agora=
+
+new Date();
+
+
+
+banco.status.estado=
+
+"ATIVIDADE";
+
+banco.status.inicioPreparacao=null;
+banco.status.fimPreparacao=null;
+
+banco.status.inicioAtividade=
+
+agora.toISOString();
+
+
+
+banco.status.atividadeAtual={
+
+id:novoID(),
+
+tipo:banco.status.tipo,
+
+inicio:agora.toISOString(),
+
+fim:null,
+
+duracao:0,
+
+origem:"Automática"
+
+};
+
+
+
+/* esconde toda preparação */
+
+$("horarioPrevisto").innerHTML="";
+
+$("mensagemPreparacao").innerHTML="";
+
+$("barraPreparacao").value=0;
+
+$("cronometro").innerHTML="--:--";
+$("horarioPrevisto").innerHTML="";
+$("mensagemPreparacao").innerHTML="";
+$("barraPreparacao").value=0;
+
+await salvarBanco();
+
+atualizarTela();
+
+});
+
+}
+
+
+
+$("btIniciar").onclick=
+
+iniciarAtividade;
+  
+/*************************************************
+
+FINALIZAR ATIVIDADE
+
+*************************************************/
+
+async function finalizarAtividade(){
+
+abrirSenha(async function(){
+
+await carregarBanco();
+
+if(banco.status.estado!="ATIVIDADE"){
+
+alert("Nenhuma atividade em andamento.");
+
+return;
+
+}
+
+let fim=new Date();
+
+let inicio=new Date(
+
+banco.status.inicioAtividade
+
+);
+
+let minutos=Math.round(
+
+(fim-inicio)/60000
+
+);
+
+if(minutos<1){
+
+minutos=1;
+
+}
+
+banco.status.atividadeAtual.fim=
+
+fim.toISOString();
+
+banco.status.atividadeAtual.data=
+
+fim.toISOString().substring(0,10);
+
+banco.status.atividadeAtual.duracao=
+
+minutos;
+
+adicionarRegistro(
+
+banco.status.atividadeAtual
+
+);
+
+/* limpa completamente o estado */
+
+banco.status.estado="OFF";
+
+banco.status.tipo="";
+
+banco.status.inicioDisponibilidade=null;
+
+banco.status.inicioPreparacao=null;
+
+banco.status.fimPreparacao=null;
+
+banco.status.inicioAtividade=null;
+
+banco.status.fimAtividade=
+
+fim.toISOString();
+
+banco.status.atividadeAtual=null;
+
+/* limpa a interface */
+
+$("cronometro").innerHTML="--:--";
+
+$("horarioPrevisto").innerHTML="";
+
+$("mensagemPreparacao").innerHTML="";
+
+$("barraPreparacao").value=0;
+
+$("cronometro").style.display="block";
+
+$("horarioPrevisto").style.display="block";
+
+$("barraPreparacao").style.display="block";
+
+$("mensagemPreparacao").style.display="block";
+
+await salvarBanco();
+
+gerarHistorico();
+
+gerarRelatorios();
+
+atualizarTela();
+
+});
+
+}
+
+$("btFinalizar").onclick=
+
+finalizarAtividade;
+
+
+
+/*************************************************
+
+CADASTRO MANUAL
+
+*************************************************/
+
+async function salvarRegistroManual(){
+
+abrirSenha(async function(){
+
+await carregarBanco();
+
+let tipo=$("manualTipo").value;
+
+let tempo=parseInt(
+
+$("manualTempo").value
+
+);
+
+if(isNaN(tempo)||tempo<=0){
+
+alert("Informe um tempo válido.");
+
+return;
+
+}
+
+let data=$("manualData").value;
+
+if(data==""){
+
+data=new Date()
+
+.toISOString()
+
+.substring(0,10);
+
+}
+
+let hora=$("manualHora").value;
+
+let registro={
+
+id:novoID(),
+
+tipo:tipo,
+
+duracao:tempo,
+
+data:data,
+
+inicio:hora,
+
+fim:"",
+
+origem:"Manual"
+
+};
+
+adicionarRegistro(registro);
+
+$("manualTempo").value="";
+
+$("manualData").value="";
+
+$("manualHora").value="";
+
+await salvarBanco();
+
+gerarHistorico();
+
+gerarRelatorios();
+
+});
+
+}
+
+$("btSalvarManual").onclick=
+
+salvarRegistroManual;
+
+
+
+/*************************************************
+
+HISTÓRICO
+
+*************************************************/
+
+function gerarHistorico(){
+
+let corpo=
+
+$("listaHistorico");
+
+corpo.innerHTML="";
+
+if(banco.historico.length==0){
+
+corpo.innerHTML=
+
+"<tr><td colspan='5'>Nenhum registro.</td></tr>";
+
+return;
+
+}
+
+let lista=[...banco.historico];
+
+lista.sort(function(a,b){
+
+return(
+
+(b.data||"")
+
+.localeCompare(
+
+a.data||""
+
+)
+
+);
+
+});
+
+lista.forEach(function(r){
+
+let tr=
+
+document.createElement("tr");
+
+tr.innerHTML=
+
+"<td>"+
+
+(r.data||"")
+
++"</td>"+
+
+"<td>"+
+
+r.tipo+
+
+"</td>"+
+
+"<td>"+
+
+r.duracao+
+
+" min</td>"+
+
+"<td>"+
+
+r.origem+
+
+"</td>"+
+
+"<td>"+
+
+"<button style='background:#C62828;color:white' onclick=\"excluirRegistro('"+r.id+"')\">"
+
++
+
+"Excluir"
+
++
+
+"</button>"
+
++
+
+"</td>";
+
+corpo.appendChild(tr);
+
+});
+
+}
+
+
+
+async function excluirRegistro(id){
+
+abrirSenha(async function(){
+
+if(!confirm(
+
+"Excluir este registro?"
+
+)){
+
+return;
+
+}
+
+await carregarBanco();
+
+excluirRegistroLista(id);
+
+await salvarBanco();
+
+gerarHistorico();
+
+gerarRelatorios();
+
+});
+
+}
+  
+/*************************************************
+
+RELATÓRIOS MENSAIS
+(AVALIAÇÃO POR MÊS)
+
+*************************************************/
+
+function gerarRelatorios(){
+
+let area=$("relatorios");
+
+area.innerHTML="";
+
+let meses=mesesAgrupados();
+
+let nomes=[
+
+"Janeiro",
+"Fevereiro",
+"Março",
+"Abril",
+"Maio",
+"Junho",
+"Julho",
+"Agosto",
+"Setembro",
+"Outubro",
+"Novembro",
+"Dezembro"
+
+];
+
+let chaves=Object.keys(meses);
+
+chaves.sort().reverse();
+
+if(chaves.length==0){
+
+area.innerHTML="Nenhum relatório.";
+
+return;
+
+}
+
+chaves.forEach(function(chave){
+
+let lista=meses[chave];
+
+let total=0;
+
+let simples=0;
+
+let completas=0;
+
+let minutos=0;
+
+let minutosSimples=0;
+
+let minutosCompleta=0;
+
+lista.forEach(function(r){
+
+total++;
+
+minutos+=Number(r.duracao)||0;
+
+if(r.tipo=="Simples"){
+
+simples++;
+
+minutosSimples+=Number(r.duracao)||0;
+
+}else{
+
+completas++;
+
+minutosCompleta+=Number(r.duracao)||0;
+
+}
+
+});
+
+let horas=minutos/60;
+
+let percentual=0;
+
+if(total>0){
+
+percentual=(completas*100)/total;
+
+}
+
+let notaHoras=0;
+
+if(horas<50){
+
+notaHoras=0;
+
+}else if(horas<=65){
+
+notaHoras=1;
+
+}else if(horas<=80){
+
+notaHoras=2;
+
+}else if(horas<=95){
+
+notaHoras=3;
+
+}else if(horas<=110){
+
+notaHoras=4;
+
+}else{
+
+notaHoras=5;
+
+}
+
+let notaCompleta=0;
+
+if(percentual<=30){
+
+notaCompleta=0;
+
+}else if(percentual<=40){
+
+notaCompleta=1;
+
+}else if(percentual<=50){
+
+notaCompleta=2;
+
+}else if(percentual<=60){
+
+notaCompleta=3;
+
+}else if(percentual<=70){
+
+notaCompleta=4;
+
+}else{
+
+notaCompleta=5;
+
+}
+
+let ano=chave.substring(0,4);
+
+let mes=parseInt(chave.substring(5))-1;
+
+let bloco=document.createElement("div");
+
+bloco.className="mes";
+
+bloco.innerHTML=
+
+"<div class='mesTitulo' onclick=\"abrirMes('mes"+chave.replace('-','')+"','"+chave+"')\">"
+
++
+
+nomes[mes]
+
++
+
+" / "
+
++
+
+ano
+
++
+
+"</div>"
+
++
+
+"<div class='mesConteudo' id='mes"
+
++
+
+chave.replace('-','')
+
++
+
+"'>"
+
++
+
+"<p><b>Total:</b> "
+
++
+
+total
+
++
+
+"</p>"
+
++
+
+"<p><b>Simples:</b> "
+
++
+
+simples
+
++
+
+"</p>"
+
++
+
+"<p><b>Completas:</b> "
+
++
+
+completas
+
++
+
+"</p>"
+
++
+
+"<p><b>Horas:</b> "
+
++
+
+horas.toFixed(2)
+
++
+
+"</p>"
+
++
+
+"<p><b>% Completa:</b> "
+
++
+
+percentual.toFixed(1)
+
++
+
+"%</p>"
+
++
+
+"<p class='estrelas'>"
+
++
+
+estrelas(notaHoras)
+
++
+
+"</p>"
+
++
+
+"<p class='estrelas'>"
+
++
+
+estrelas(notaCompleta)
+
++
+
+"</p>"
+
++
+
+"<button onclick=\"baixarTXT('"
+
++
+
+chave
+
++
+
+"')\">Baixar TXT</button> "
+
++
+
+"<button style='background:#C62828;color:white' onclick=\"excluirMes('"
+
++
+
+chave
+
++
+
+"')\">Excluir mês</button>"
+
++
+
+"</div>";
+
+area.appendChild(bloco);
+
+});
+
+}
+
+
+
+/*************************************************
+
+ABRIR RELATÓRIO
+
+*************************************************/
+
+function abrirMes(id,chave){
+
+let d=$(id);
+
+if(d.style.display=="block"){
+
+d.style.display="none";
+
+return;
+
+}
+
+document
+
+.querySelectorAll(".mesConteudo")
+
+.forEach(function(e){
+
+e.style.display="none";
+
+});
+
+d.style.display="block";
+
+mesSelecionado=chave;
+
+atualizarAvaliacaoMes(chave);
+
+}
+
+
+
+/*************************************************
+
+ESTRELAS
+
+*************************************************/
+
+function estrelas(n){
+
+let s="";
+
+for(let i=1;i<=5;i++){
+
+s+=i<=n?"★":"☆";
+
+}
+
+return s;
+
+}
+  
+/*************************************************
+
+AVALIAÇÃO DO MÊS SELECIONADO
+
+*************************************************/
+
+function atualizarAvaliacaoMes(chave){
+
+let meses=mesesAgrupados();
+
+if(!meses[chave]){
+
+return;
+
+}
+
+let lista=meses[chave];
+
+let total=0;
+
+let completas=0;
+
+let minutos=0;
+
+lista.forEach(function(r){
+
+total++;
+
+minutos+=Number(r.duracao)||0;
+
+if(r.tipo=="Completa"){
+
+completas++;
+
+}
+
+});
+
+let horas=minutos/60;
+
+let percentual=0;
+
+if(total>0){
+
+percentual=(completas*100)/total;
+
+}
+
+
+
+let notaHoras=0;
+
+if(horas<50){
+
+notaHoras=0;
+
+}else if(horas<=65){
+
+notaHoras=1;
+
+}else if(horas<=80){
+
+notaHoras=2;
+
+}else if(horas<=95){
+
+notaHoras=3;
+
+}else if(horas<=110){
+
+notaHoras=4;
+
+}else{
+
+notaHoras=5;
+
+}
+
+
+
+let notaCompleta=0;
+
+if(percentual<=30){
+
+notaCompleta=0;
+
+}else if(percentual<=40){
+
+notaCompleta=1;
+
+}else if(percentual<=50){
+
+notaCompleta=2;
+
+}else if(percentual<=60){
+
+notaCompleta=3;
+
+}else if(percentual<=70){
+
+notaCompleta=4;
+
+}else{
+
+notaCompleta=5;
+
+}
+
+
+
+$("notaHoras").innerHTML=
+
+estrelas(notaHoras);
+
+
+
+$("notaCompletas").innerHTML=
+
+estrelas(notaCompleta);
+
+
+
+$("horasMes").innerHTML=
+
+horas.toFixed(2)+" h";
+
+
+
+$("percentualMes").innerHTML=
+
+percentual.toFixed(1)+"%";
+
+}
+
+
+
+/*************************************************
+
+EXPORTAR RELATÓRIO TXT
+
+*************************************************/
+
+function baixarTXT(chave){
+
+let meses=mesesAgrupados();
+
+if(!meses[chave]){
+
+return;
+
+}
+
+
+
+let lista=meses[chave];
+
+
+
+let total=0;
+
+let simples=0;
+
+let completas=0;
+
+let minutos=0;
+
+let minutosSimples=0;
+
+let minutosCompleta=0;
+
+
+
+lista.forEach(function(r){
+
+total++;
+
+minutos+=Number(r.duracao)||0;
+
+if(r.tipo=="Simples"){
+
+simples++;
+
+minutosSimples+=Number(r.duracao)||0;
+
+}else{
+
+completas++;
+
+minutosCompleta+=Number(r.duracao)||0;
+
+}
+
+});
+
+
+
+let horas=minutos/60;
+
+let percentual=0;
+
+if(total>0){
+
+percentual=(completas*100)/total;
+
+}
+
+
+
+let notaHoras=0;
+
+if(horas<50){
+
+notaHoras=0;
+
+}else if(horas<=65){
+
+notaHoras=1;
+
+}else if(horas<=80){
+
+notaHoras=2;
+
+}else if(horas<=95){
+
+notaHoras=3;
+
+}else if(horas<=110){
+
+notaHoras=4;
+
+}else{
+
+notaHoras=5;
+
+}
+
+
+
+let notaCompleta=0;
+
+if(percentual<=30){
+
+notaCompleta=0;
+
+}else if(percentual<=40){
+
+notaCompleta=1;
+
+}else if(percentual<=50){
+
+notaCompleta=2;
+
+}else if(percentual<=60){
+
+notaCompleta=3;
+
+}else if(percentual<=70){
+
+notaCompleta=4;
+
+}else{
+
+notaCompleta=5;
+
+}
+
+
+
+let texto="";
+
+
+
+texto+="RELATÓRIO MENSAL\r\n";
+
+texto+="==============================\r\n\r\n";
+
+texto+="Competência: "+chave+"\r\n\r\n";
+
+texto+="Total de atividades: "+total+"\r\n";
+
+texto+="Atividades Simples: "+simples+"\r\n";
+
+texto+="Atividades Completas: "+completas+"\r\n\r\n";
+
+texto+="Horas Trabalhadas: "+horas.toFixed(2)+"\r\n";
+
+texto+="Horas Simples: "+(minutosSimples/60).toFixed(2)+"\r\n";
+
+texto+="Horas Completas: "+(minutosCompleta/60).toFixed(2)+"\r\n\r\n";
+
+texto+="Percentual Completa: "+percentual.toFixed(1)+"%\r\n\r\n";
+
+texto+="Avaliação Horas: "+estrelas(notaHoras)+"\r\n";
+
+texto+="Avaliação Atividades Completas: "+estrelas(notaCompleta)+"\r\n";
+
+
+
+texto+="\r\n";
+
+texto+="=====================================\r\n";
+
+texto+="REGISTROS\r\n";
+
+texto+="=====================================\r\n\r\n";
+
+
+
+lista.forEach(function(r){
+
+texto+=
+
+(r.data||"")
+
++"   "
+
++r.tipo
+
++"   "
+
++r.duracao
+
++" min"
+
++"   "
+
++r.origem
+
++"\r\n";
+
+});
+
+
+
+let blob=new Blob(
+
+[texto],
+
+{
+
+type:"text/plain;charset=utf-8"
+
+}
+
+);
+
+
+
+let a=document.createElement("a");
+
+a.href=
+
+URL.createObjectURL(blob);
+
+a.download=
+
+"Relatorio_"+chave+".txt";
+
+a.click();
+
+
+
+setTimeout(function(){
+
+URL.revokeObjectURL(a.href);
+
+},500);
+
+}
+  
+/*************************************************
+
+EXCLUIR MÊS
+
+*************************************************/
+
+async function excluirMes(chave){
+
+abrirSenha(async function(){
+
+if(!confirm(
+
+"Excluir TODOS os registros deste mês?"
+
+)){
+
+return;
+
+}
+
+await carregarBanco();
+
+banco.historico=
+
+banco.historico.filter(function(r){
+
+if(!r.data)return true;
+
+return r.data.substring(0,7)!=chave;
+
+});
+
+await salvarBanco();
+
+gerarHistorico();
+
+gerarRelatorios();
+
+if(mesSelecionado==chave){
+
+$("notaHoras").innerHTML="☆☆☆☆☆";
+
+$("notaCompletas").innerHTML="☆☆☆☆☆";
+
+$("horasMes").innerHTML="0,00 h";
+
+$("percentualMes").innerHTML="0%";
+
+}
+
+});
+
+}
+
+
+
+/*************************************************
+
+ATUALIZAÇÃO MANUAL
+
+*************************************************/
+
+$("btAtualizar").onclick=async function(){
+
+await carregarBanco();
+
+};
+
+
+
+/*************************************************
+
+INICIALIZAÇÃO
+
+*************************************************/
+
+window.onload=async function(){
+
+await carregarBanco();
+
+};
+
+
+
+/*************************************************
+
+OBSERVAR MUDANÇA DE ESTADO
+
+*************************************************/
+
+setInterval(function(){
+
+if(
+
+banco.status.estado=="PREPARACAO"
+
+){
+
+let fim=
+
+new Date(
+
+banco.status.fimPreparacao
+
+);
+
+if(new Date()>=fim){
+
+banco.status.estado="AGUARDANDO";
+banco.status.fimPreparacao=null;
+banco.status.inicioPreparacao=null;
+
+$("cronometro").innerHTML="--:--";
+$("horarioPrevisto").innerHTML="";
+$("mensagemPreparacao").innerHTML="";
+$("barraPreparacao").value=0;
+salvarBanco();
+
+atualizarTela();
+
+}
+
+}
+
+},1000);
+
+
+
+/*************************************************
+
+ATALHO ENTER NA SENHA
+
+*************************************************/
+
+$("senha").addEventListener(
+
+"keydown",
+
+function(e){
+
+if(e.key=="Enter"){
+
+$("btSenhaOK").click();
+
+}
+
+}
+
+);
+
+
+
+/*************************************************
+
+LIMPEZA DA INTERFACE
+
+*************************************************/
+
+function limparPainel(){
+
+$("cronometro").innerHTML="--:--";
+
+$("horarioPrevisto").innerHTML="";
+
+$("mensagemPreparacao").innerHTML="";
+
+$("barraPreparacao").value=0;
+
+$("tempoPreparacao").value="";
+
+}
+
+
+
+/*************************************************
+
+VERSÃO
+
+*************************************************/
+
+console.log(
+
+"Controle de Produtividade V2.2"
+
+);
+
+</script>
+
+</body>
+
+</html>
